@@ -115,44 +115,100 @@ y = np.array([[5.], [7.]])
 array([[-3.],
        [ 4.]])
 
+基本切片
+基本切片语法是 i:j:k 其中i是起始索引，j是停止索引，k是步骤（k\neq0）
+>>> x = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+>>> x[1:7:2]
+array([1, 3, 5])
+
+>>> x[-2:10]
+array([8, 9])
+>>> x[-3:3:-1]
+array([7, 6, 5, 4])
+
+>>> x[5:]
+array([5, 6, 7, 8, 9])
+
+>>> x = np.array([[[1],[2],[3]], [[4],[5],[6]]])
+>>> x.shape
+(2, 3, 1)
+>>> x[1:2]
+array([[[4],
+        [5],
+        [6]]])
+>>> x.shape
+(2, 3, 1)
+>>> x[...,0] #x.ndim生成与长度相同的选择元组所需的对象数。和x[:,:,0]效果一样
+array([[1, 2, 3],
+    [4, 5, 6]])
+>>> x.shape
+(2, 3)
+>>> x[:,np.newaxis,:,:].shape #增加维度
+(2, 1, 3, 1)
+
+高级索引
+
+>>> x = np.array([[1, 2], [3, 4], [5, 6]])
+>>> x[[0, 1, 2], [0, 1, 0]]
+array([1, 4, 5])
+
+>>> x = array([[ 0,  1,  2],
+...            [ 3,  4,  5],
+...            [ 6,  7,  8],
+...            [ 9, 10, 11]])
+>>> rows = np.array([[0, 0],
+...                  [3, 3]], dtype=np.intp)
+>>> columns = np.array([[0, 2],
+...                     [0, 2]], dtype=np.intp)
+>>> x[rows, columns] #此方法等同x[:2,:2]，意在取x的指定子数组
+array([[ 0,  2],
+       [ 9, 11]])
+
+>>> rows = np.array([0, 3], dtype=np.intp)
+>>> columns = np.array([0, 2], dtype=np.intp)
+>>> rows[:, np.newaxis]
+array([[0],
+       [3]])
+>>> x[rows[:, np.newaxis], columns]
+array([[ 0,  2],
+       [ 9, 11]])
+使用函数ix_也可以实现这种广播
+>>> x[np.ix_(rows, columns)]
+array([[ 0,  2],
+       [ 9, 11]])
+#如果没有np.ix_进行广播，就只取[0,0]和[3,2]两个元素
 
 
+布尔数组索引
+>>> x = np.array([[1., 2.], [np.nan, 3.], [np.nan, np.nan]])
+x[np.isnan(x)]
+array([ nan,  nan,  nan])
+>>> x[~np.isnan(x)]
+array([ 1.,  2.,  3.])
+>>> x = np.array([1., -1., -2., 3])
+>>> x[x<0] = 99
+>>> x
+array([  1.,  99.,  99.,   3.])
 
+>>> x = np.array([[0, 1], [1, 1], [2, 2]])
+>>> rowsum = x.sum(-1) #按行计算和，这里我用x.sum(1)也一样
+>>> x[rowsum <= 2, :]
+array([[0, 1],
+       [1, 1]])
 
+>>> x = array([[ 0,  1,  2],
+...            [ 3,  4,  5],
+...            [ 6,  7,  8],
+...            [ 9, 10, 11]])
+>>> rows = (x.sum(-1) % 2) == 0
+>>> rows
+array([False,  True, False,  True])
+>>> columns = [0, 2]
+>>> x[np.ix_(rows, columns)]
+array([[ 3,  5],
+       [ 9, 11]])
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+x.flat返回一个迭代器，它将迭代整个数组，x.flat是一维视图，x.flat[:]调用
 
 
 
