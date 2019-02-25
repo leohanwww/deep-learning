@@ -11,7 +11,7 @@
 A      (4d array):  8 x 1 x 6 x 1
 B      (3d array):      7 x 1 x 5
 Result (4d array):  8 x 7 x 6 x 5
-
+B的大小为1的维度被拉伸以适应A，A的大小为1的维也被拉伸以适应
 >>> x = np.arange(4)
 >>> xx = x.reshape(4,1)
 >>> y = np.ones(5)
@@ -30,7 +30,25 @@ array([[ 1.,  2.,  3.,  4.],
        [ 1.,  2.,  3.,  4.]])
 
 
+A      (2d array):  5 x 4
+B      (1d array):      1
+Result (2d array):  5 x 4
 
+A      (2d array):  5 x 4
+B      (1d array):      4
+Result (2d array):  5 x 4
+
+A      (3d array):  15 x 3 x 5
+B      (3d array):  15 x 1 x 5
+Result (3d array):  15 x 3 x 5
+
+A      (3d array):  15 x 3 x 5
+B      (2d array):       3 x 5
+Result (3d array):  15 x 3 x 5
+
+A      (3d array):  15 x 3 x 5
+B      (2d array):       3 x 1
+Result (3d array):  15 x 3 x 5
 
 
 
