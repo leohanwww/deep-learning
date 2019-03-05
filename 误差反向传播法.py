@@ -7,9 +7,9 @@
 链式法则
 z = t**2
 t = x + y
-aZ/aX = aZ/aZ * aZ/aT * aT/aX
+aZ/aX = aZ/aZ * aZ/aT * aT/aX  其实就是 az / aX = az/aT * aT/aX
 反向传播即z关于x的导数aZ/aX
-这样的好处就是只要关心局部计算，可以计算出x和y有微小变化时z做出何种变化
+这样的好处就是只要关心局部计算，可以计算出x有微小变化时z做出何种变化
 
 加法节点的反向传播
 aL/aZ ......aL/az * 1  
@@ -104,11 +104,10 @@ print(dapple_num, dapple, dorange, dorange_num, dtax) # 110 2.2 3.3 165 650
 
 激活函数层的实现
 
-def Relu:
+class Relu:
 	def __init__(self):
 		self.mask = None
-#mask是由True/False构成的数组，它会把正向传播时的输入x的元素中小于等于0 的地方保存为True，其
-#他地方（大于0 的元素）保存为False。
+#mask是由True/False构成的数组，它会把正向传播时的输入x的元素中小于等于0 的地方保存为True，其他地方（大于0 的元素）保存为False。
 	def forward(self, x):
 		self.mask = (x <= 0 )
 		out = x.copy()
@@ -121,16 +120,26 @@ def Relu:
 		return dx
 
 >>> x = np.array( [[1.0, -0.5], [-2.0, 3.0]] )
->>> print(x)
-[[ 1. -0.5]
-[-2. 3. ]]
 >>> mask = (x <= 0)
 >>> print(mask)
 [[False True]
 [ True False]]
 
+除法层的反向传播
+-（y**2） y就是正向传播的out
+反向通过除法层，添加-（y**2）
 
-sigmoid层
+
+exp节点的反向传播
+ay / ax = -(y**2) y为正向输出的结果
+dx = -(y**2)
+
+
+
+sigmoid层的反向传播只需根据正向传播的输出就能计算出来
+sigmod层反向输出为(aL/ay)（y**2）exp（-x）#dout*(y**2)exp(-x)
+可以简化为(aL/ay)y（1-y）  #aL/ay就是dout，由结尾方向反向传来，y就是out 反向输出为dout*y(1-y)
+
 
 class Sigmoid:
 	def __init__(self):
@@ -144,11 +153,11 @@ class Sigmoid:
 	def backward(self, dout):
 		dx = dout * (1.0 - self.out) * self.out
 		return dx
-#正向传播时将输出保存在了实例变量out中。然后，反向
-#传播时，使用该变量out进行计算。
+#正向传播时将输出保存在了实例变量out中。然后，反向传播时，使用该变量out进行计算。
 
-Affine层-访射层
-
+Affine层/Softmax层的实现
+神经网络的正向传播中进行的矩阵的乘积运算在几何学领域被称为“仿
+射变换”。因此，这里将进行仿射变换的处理实现为“Affine层”。
 >>> X = np.random.rand(2) # 输入
 >>> W = np.random.rand(2,3) # 权重
 >>> B = np.random.rand(3) # 偏置
@@ -165,9 +174,9 @@ array([-1.086231  ,  0.67445112,  0.68213472])
 激活函数转换后，传递给下一层。这就是神经网络正向传播的流程
 
 Affine层的反向传播
-aL/aX = aL/aY * W(T)
+aL/aX = aL/aY * W(T) #转置
 aL/aW = x(T) * aL/aY
-w(T)表示W的转制，w为（2，3）的转制就为（3，2）
+w(T)表示W的转制，w为（2，3）的转置就为（3，2）
 
 批Affine层
 >>> X_dot_W = np.array([[0, 0, 0], [10, 10, 10]])
@@ -198,7 +207,7 @@ class Affine:
 		self.dW = None
 		self.db = None
 		
-	def forward(self, x):
+	def forward(self, x):#正向传播
 		self.x = x
 		out = np.dot(x, self.w) + self.b
 		return out
@@ -211,7 +220,7 @@ class Affine:
 
 softmax_with_loss层
 
-class SoftmaxWithLoss:
+class SoftmaxWithLoss:#softmax层和cross entropy error层的结合
 	def __init__(self):
 		self.loss = None
 		self.y = None
@@ -227,7 +236,9 @@ class SoftmaxWithLoss:
 		batch_size = self.t.shape[0]
 		dx = (self.y - self.t) / batch_size
 		return dx
-
+#将要传播的值除以批的大小（batch_size）后，传递给前面的层的是单个数据的误差。
+		
+		
 反向两层网络的实现
 
 params 保存神经网络的参数的字典型变量。
