@@ -370,3 +370,69 @@ for i in range(iters_num):
 	loss = network.loss(x_batch, t_batch)
 	train_loss_list.append(loss)
 
+以上的是基于训练数据的损失值，严格地讲是“对训练数据的某
+个mini-batch 的损失函数”的值，神经网络学习的最初目标是掌握泛化能力，因此，要评价神经网络的泛
+化能力，就必须使用不包含在训练数据中的数据
+
+epoch是一个单位。一个epoch表示学习中所有训练数据均被使用过
+一次时的更新次数。比如，对于10000 笔训练数据，用大小为100
+笔数据的mini-batch 进行学习时，重复随机梯度下降法100 次，所
+有的训练数据就都被“看过”了A。此时，100次就是一个epoch。
+
+import numpy as np
+from dataset.mnist import load_mnist
+from two_layer_net import TwoLayerNet
+
+(x_train, t_train), (x_test, t_test) = \ load_mnist(normalize=True, one_hot_
+laobel = True)
+
+train_loss_list = []
+train_acc_list = []
+test_acc_list = []
+# 平均每个epoch的重复次数
+iter_per_epoch = max(train_size / batch_size, 1)
+
+# 超参数
+iters_num = 10000
+batch_size = 100
+learning_rate = 0.1
+network = TwoLayerNet(input_size=784, hidden_size=50, output_size=10)
+
+for i in range(iters_num):
+	# 获取mini-batch
+	batch_mask = np.random.choice(train_size, batch_size)
+	x_batch = x_train[batch_mask]
+	t_batch = t_train[batch_mask]
+
+	# 计算梯度
+	grad = network.numerical_gradient(x_batch, t_batch)
+	# grad = network.gradient(x_batch, t_batch) # 高速版!
+
+	# 更新参数
+	for key in ('W1', 'b1', 'W2', 'b2'):
+		network.params[key] -= learning_rate * grad[key]
+
+	loss = network.loss(x_batch, t_batch)
+	train_loss_list.append(loss)
+
+	# 计算每个epoch的识别精度
+	if i % iter_per_epoch == 0:#是epoch的整数倍的话，即第N次学习过所有数据
+		train_acc = network.accuracy(x_train, t_train)#计算精度
+		test_acc = network.accuracy(x_test, t_test)
+		train_acc_list.append(train_acc)
+		test_acc_list.append(test_acc)
+		print("train acc, test acc | " + str(train_acc) + ", " + str(test_acc))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
